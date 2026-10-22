@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For You</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons for UI elements -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts for elegant typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Romantic, animated gradient background */
+            background: linear-gradient(-45deg, #2b1055, #7597de, #eb6b9d, #1a0b2e);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .title-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Spinning animation for album art */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spin-anim {
+            animation: spin 10s linear infinite;
+        }
+        .spin-anim.paused {
+            animation-play-state: paused;
+        }
+
+        /* Custom styling for range inputs (sliders) */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            touch-action: none; /* Prevents page scroll when sliding on mobile */
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px; /* Increased for better mobile touch target */
+            width: 20px;  /* Increased for better mobile touch target */
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            margin-top: -7px; /* Centered on the thicker track */
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px; /* Slightly thicker track for visibility */
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="text-white selection:bg-pink-500 selection:text-white">
+
+    <!-- Audio Element (Hidden) -->
+    <!-- REPLACE THIS SRC WITH YOUR OWN SONG URL -->
+    <audio id="audio-player" src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" preload="metadata"></audio>
+
+    <div class="glass-card max-w-sm w-full mx-4 rounded-3xl p-8 flex flex-col items-center relative overflow-hidden">
+        
+        <!-- Subtle decorative glow behind the art -->
+        <div class="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-pink-500 rounded-full blur-3xl opacity-30 pointer-events-none"></div>
+
+        <!-- Album Art -->
+        <div class="relative w-48 h-48 mb-6 group shadow-2xl rounded-full">
+            <!-- REPLACE THIS IMAGE URL WITH YOUR DESIRED ALBUM ART OR PHOTO -->
+            <img id="album-art" src="https://images.unsplash.com/photo-1518609878373-06d740f60d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" 
+                 alt="Album Art" 
+                 class="w-full h-full object-cover rounded-full border-4 border-white/20 spin-anim paused">
+            <!-- Center hole to make it look like a vinyl record -->
+            <div class="absolute inset-0 m-auto w-12 h-12 bg-gray-900 rounded-full border-2 border-white/20 z-10 flex items-center justify-center">
+                <div class="w-3 h-3 bg-white/50 rounded-full"></div>
+            </div>
+        </div>
+
+        <!-- Song Info -->
+        <div class="text-center mb-6 w-full">
+            <h2 class="text-2xl title-font italic mb-1 truncate px-2" title="Our Song">Our Special Song</h2>
+            <p class="text-sm text-white/70 font-light truncate px-2" title="Artist Name">Unknown Artist</p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full mb-6">
+            <input type="range" id="progress-bar" value="0" min="0" max="100" step="0.1" class="w-full">
+            <div class="flex justify-between text-xs text-white/60 mt-2 font-medium tracking-wide">
+                <span id="current-time">0:00</span>
+                <span id="total-duration">0:00</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center justify-center gap-4 mb-6 w-full">
+            <button id="rewind-btn" class="p-3 text-white/70 hover:text-white transition-colors duration-200 focus:outline-none">
+                <i class="ph-fill ph-rewind-circle text-5xl drop-shadow-md"></i>
+            </button>
+            
+            <button id="play-pause-btn" class="w-20 h-20 flex items-center justify-center bg-white text-gray-900 rounded-full hover:scale-105 active:scale-95 transition-all duration-200 shadow-[0_0_20px_rgba(255,255,255,0.4)] focus:outline-none">
+                <i id="play-icon" class="ph-fill ph-play text-3xl ml-1"></i>
+                <i id="pause-icon" class="ph-fill ph-pause text-3xl hidden"></i>
+            </button>
+            
+            <button id="forward-btn" class="p-3 text-white/70 hover:text-white transition-colors duration-200 focus:outline-none">
+                <i class="ph-fill ph-fast-forward-circle text-5xl drop-shadow-md"></i>
+            </button>
+        </div>
+
+        <!-- Volume Control -->
+        <div class="flex items-center gap-4 w-full px-2 mt-2">
+            <i class="ph ph-speaker-low text-white/70 text-xl"></i>
+            <input type="range" id="volume-bar" value="100" min="0" max="100" class="flex-1 py-3">
+            <i class="ph ph-speaker-high text-white/70 text-xl"></i>
+        </div>
+
+        <!-- Optional little message -->
+        <p class="mt-8 text-xs text-white/40 font-light tracking-widest uppercase">Dedicated to you</p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const audio = document.getElementById('audio-player');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const playIcon = document.getElementById('play-icon');
+            const pauseIcon = document.getElementById('pause-icon');
+            const progressBar = document.getElementById('progress-bar');
+            const currentTimeEl = document.getElementById('current-time');
+            const totalDurationEl = document.getElementById('total-duration');
+            const volumeBar = document.getElementById('volume-bar');
+            const albumArt = document.getElementById('album-art');
+            const rewindBtn = document.getElementById('rewind-btn');
+            const forwardBtn = document.getElementById('forward-btn');
+
+            let isPlaying = false;
+
+            // Format time in M:SS
+            function formatTime(seconds) {
+                if (isNaN(seconds)) return "0:00";
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            }
+
+            // Play / Pause Logic
+            function togglePlay() {
+                if (isPlaying) {
+                    audio.pause();
+                    playIcon.classList.remove('hidden');
+                    pauseIcon.classList.add('hidden');
+                    albumArt.classList.add('paused');
+                } else {
+                    audio.play().catch(e => console.error("Playback failed:", e));
+                    playIcon.classList.add('hidden');
+                    pauseIcon.classList.remove('hidden');
+                    albumArt.classList.remove('paused');
+                }
+                isPlaying = !isPlaying;
+            }
+
+            playPauseBtn.addEventListener('click', togglePlay);
+
+            // Update duration when metadata loads
+            audio.addEventListener('loadedmetadata', () => {
+                totalDurationEl.textContent = formatTime(audio.duration);
+                progressBar.max = audio.duration;
+            });
+
+            // Update progress bar and time as song plays
+            audio.addEventListener('timeupdate', () => {
+                progressBar.value = audio.currentTime;
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+            });
+
+            // Seek functionality
+            progressBar.addEventListener('input', () => {
+                audio.currentTime = progressBar.value;
+                currentTimeEl.textContent = formatTime(progressBar.value);
+            });
+
+            // Volume functionality
+            volumeBar.addEventListener('input', () => {
+                audio.volume = volumeBar.value / 100;
+            });
+
+            // Rewind 10 seconds
+            rewindBtn.addEventListener('click', () => {
+                audio.currentTime = Math.max(0, audio.currentTime - 10);
+            });
+
+            // Forward 10 seconds
+            forwardBtn.addEventListener('click', () => {
+                audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+            });
+
+            // Reset when song ends
+            audio.addEventListener('ended', () => {
+                isPlaying = false;
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+                albumArt.classList.add('paused');
+                audio.currentTime = 0;
+                progressBar.value = 0;
+            });
+        });
+    </script>
+</body>
+</html>
